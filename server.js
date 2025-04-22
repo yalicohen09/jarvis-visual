@@ -1,18 +1,26 @@
 const express = require('express');
 const http = require('http');
 const WebSocket = require('ws');
+const path = require('path');
 
 const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
-// WebSocket logic
+// 🟢 משרת את הקבצים מהתיקייה public
+app.use(express.static(path.join(__dirname, 'public')));
+
+// 🔵 הגדרה שתחזיר את index.html לכל בקשה (כדי שלא יהיה 404)
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// 🟣 WebSocket
 wss.on('connection', function connection(ws) {
   console.log('🔗 Client connected!');
   
   ws.on('message', function incoming(message) {
     console.log('📩 received:', message);
-    // משדר את ההודעה לכולם
     wss.clients.forEach(function each(client) {
       if (client.readyState === WebSocket.OPEN) {
         client.send(message);
@@ -21,10 +29,8 @@ wss.on('connection', function connection(ws) {
   });
 });
 
-// Serve static files from public/
-app.use(express.static('public'));
-
-// Start server
-server.listen(3000, function () {
-  console.log('🚀 Server running on PORT 3000');
+// 🔴 מאזין לפורט של Render
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, function () {
+  console.log(`🚀 Server running on PORT ${PORT}`);
 });

@@ -6,35 +6,32 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-  <!-- 🟢 HEADER: שם JARVIS + אזורי זמן -->
-  <div class="header">
-    <h1>JARVIS</h1>
-    <div class="timezones">
-      <div class="timezone">
-        <div class="label">Israel</div>
-        <div class="time large" id="time-israel"></div>
+  <div class="top-bar">
+    <div class="jarvis-title">JARVIS</div>
+    <div class="clocks">
+      <div>
+        <div class="zone">ISRAEL</div>
+        <div class="time" id="clock-israel"></div>
       </div>
-      <div class="timezone">
-        <div class="label">London</div>
-        <div class="time" id="time-london"></div>
+      <div>
+        <div class="zone">LONDON</div>
+        <div class="time" id="clock-london"></div>
       </div>
-      <div class="timezone">
-        <div class="label">New York</div>
-        <div class="time" id="time-ny"></div>
+      <div>
+        <div class="zone">NEW YORK</div>
+        <div class="time" id="clock-ny"></div>
       </div>
-      <div class="timezone">
-        <div class="label">Moscow</div>
-        <div class="time" id="time-moscow"></div>
+      <div>
+        <div class="zone">MOSCOW</div>
+        <div class="time" id="clock-moscow"></div>
       </div>
-      <div class="timezone">
-        <div class="label">Paris</div>
-        <div class="time" id="time-paris"></div>
+      <div>
+        <div class="zone">PARIS</div>
+        <div class="time" id="clock-paris"></div>
       </div>
     </div>
   </div>
 
-  <!-- 🔵 MAIN CONTENT -->
   <div class="container">
     <div class="panel side-panel glow">
       <h3>CPU USAGE</h3>
@@ -48,7 +45,7 @@
 
     <div class="panel side-panel glow">
       <h3>CONTROLS</h3>
-      <p>LIGHTS: <span id="light-status">ON</span></p>
+      <p id="lights-status">LIGHTS: ...</p>
       <p>THERMOSTAT</p>
       <p>SECURITY</p>
     </div>

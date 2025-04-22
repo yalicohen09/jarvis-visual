@@ -1,0 +1,78 @@
+body {
+  margin: 0;
+  background: radial-gradient(circle at center, #000 0%, #030b17 100%);
+  color: #00ffff;
+  font-family: 'Orbitron', sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100vh;
+}
+
+.face img {
+  width: 300px;
+  border: 2px solid rgba(0,255,255,0.5);
+  border-radius: 50%;
+  box-shadow: 0 0 20px rgba(0,255,255,0.5);
+  transition: 0.3s;
+}
+
+.waveform {
+  margin-top: 20px;
+  height: 80px;
+  width: 50%;
+  background: rgba(0,255,255,0.05);
+  border: 1px solid rgba(0,255,255,0.3);
+  border-radius: 10px;
+  box-shadow: inset 0 0 10px rgba(0,255,255,0.2);
+}
+
+.dashboard {
+  display: flex;
+  justify-content: space-around;
+  width: 80%;
+  margin-top: 40px;
+}
+
+.section {
+  background: rgba(0,255,255,0.05);
+  border: 1px solid rgba(0,255,255,0.3);
+  border-radius: 10px;
+  padding: 20px;
+  width: 250px;
+  box-shadow: 0 0 15px rgba(0,255,255,0.2);
+  text-align: center;
+}
+
+.section h3 {
+  border-bottom: 1px solid rgba(0,255,255,0.5);
+  padding-bottom: 10px;
+  margin-bottom: 15px;
+  position: relative;
+}
+
+.section h3::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -1px;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(to right, transparent, #00ffff, transparent);
+}
+
+canvas.graph {
+  background: rgba(0,255,255,0.1);
+  border-radius: 5px;
+  border: 1px solid rgba(0,255,255,0.3);
+  box-shadow: inset 0 0 10px rgba(0,255,255,0.2);
+}
+
+.glow {
+  animation: glowEffect 2s infinite alternate;
+}
+
+@keyframes glowEffect {
+  0% { box-shadow: 0 0 10px rgba(0,255,255,0.2); }
+  100% { box-shadow: 0 0 20px rgba(0,255,255,0.7); }
+}

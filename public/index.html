@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Jarvis Face</title>
+  <style>
+    body { 
+      background: black; 
+      display: flex; 
+      justify-content: center; 
+      align-items: center; 
+      height: 100vh; 
+      margin: 0;
+    }
+    img { 
+      width: 1200px; /* גודל גדול */
+      max-width: 90vw;
+      max-height: 90vh;
+      transition: 0.3s; 
+    }
+  </style>
+</head>
+<body>
+  <img id="jarvis-face" 
+       src="https://cdn.glitch.global/e2b1c048-c542-433a-a1b0-8c21b6c18e4c/closed.png?v=1745307044849" 
+       alt="Jarvis Face">
+
+  <script>
+    const ws = new WebSocket('wss://YOUR-PROJECT-URL.glitch.me'); // תשנה לכתובת שלך!
+
+    ws.onopen = () => {
+      console.log('✅ WebSocket connected!');
+    };
+
+    ws.onmessage = (event) => {
+      const face = document.getElementById('jarvis-face');
+      console.log('📩 Message received:', event.data);
+      
+      if (event.data === 'start_talking') {
+        face.src = 'https://cdn.glitch.global/e2b1c048-c542-433a-a1b0-8c21b6c18e4c/open.png?v=1745306016613';
+      } else if (event.data === 'stop_talking') {
+        face.src = 'https://cdn.glitch.global/e2b1c048-c542-433a-a1b0-8c21b6c18e4c/closed.png?v=1745307044849';
+      }
+    };
+  </script>
+</body>
+</html>

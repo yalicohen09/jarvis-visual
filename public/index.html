@@ -1,117 +1,70 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>JARVIS Dashboard</title>
+  <meta charset="UTF-8" />
+  <title>JARVIS Interface</title>
   <style>
     body {
       margin: 0;
-      background: black;
+      background-color: black;
       color: #00ffff;
       font-family: 'Orbitron', sans-serif;
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      grid-template-rows: 1fr auto;
-      height: 100vh;
-      gap: 20px;
-      padding: 20px;
-    }
-    #face {
-      grid-column: 2 / 3;
-      grid-row: 1 / 2;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-    #face img {
-      width: 80%;
-      border: 2px solid #00ffff;
-      border-radius: 20px;
-    }
-    #clock {
-      grid-column: 2 / 3;
-      grid-row: 2 / 3;
-      text-align: center;
-      font-size: 2em;
-    }
-    .panel {
-      border: 2px solid #00ffff;
-      padding: 10px;
-      border-radius: 10px;
-    }
-    #analytics, #smart-home {
-      grid-row: 1 / 3;
       display: flex;
       flex-direction: column;
-      justify-content: center;
+      align-items: center;
     }
-    #analytics {
-      grid-column: 1 / 2;
+    .face {
+      margin-top: 50px;
     }
-    #smart-home {
-      grid-column: 3 / 4;
+    .face img {
+      width: 300px;
+      transition: 0.3s;
     }
-    canvas {
+    .waveform {
+      margin-top: 20px;
+      height: 100px;
+      width: 50%;
+    }
+    .dashboard {
+      display: flex;
+      justify-content: space-around;
+      width: 80%;
+      margin-top: 40px;
+      color: #00ffff;
+    }
+    .section {
+      text-align: center;
+    }
+    .graph {
+      width: 200px;
+      height: 100px;
       background: #001f1f;
-      border-radius: 10px;
+      margin: 10px auto;
     }
   </style>
 </head>
 <body>
-  <div id="analytics" class="panel">
-    <h2>CPU Usage</h2>
-    <canvas id="cpuChart" width="300" height="150"></canvas>
-  </div>
-  <div id="face">
+  <div class="face">
     <img id="jarvis-face" src="https://cdn.glitch.global/e2b1c048-c542-433a-a1b0-8c21b6c18e4c/closed.png?v=1745346349736" alt="Jarvis Face">
   </div>
-  <div id="smart-home" class="panel">
-    <h2>SMART HOME</h2>
-    <p>Lights: ON</p>
-    <p>Thermostat: 22°C</p>
+  
+  <canvas id="waveform" class="waveform"></canvas>
+
+  <div class="dashboard">
+    <div class="section">
+      <h3>CPU Usage</h3>
+      <canvas id="cpuGraph" class="graph"></canvas>
+    </div>
+    <div class="section">
+      <h3>Controls</h3>
+      <p>LIGHTS: ON</p>
+      <p>THERMOSTAT</p>
+      <p>SECURITY</p>
+    </div>
   </div>
-  <div id="clock"></div>
 
   <script>
-    // שעון
-    function updateClock() {
-      const now = new Date();
-      const time = now.toLocaleTimeString('he-IL');
-      document.getElementById('clock').textContent = time;
-    }
-    setInterval(updateClock, 1000);
-    updateClock();
-
-    // גרף CPU (נתונים מדומים כרגע)
-    const ctx = document.getElementById('cpuChart').getContext('2d');
-    const cpuData = {
-      labels: Array(10).fill(''),
-      datasets: [{
-        label: 'CPU %',
-        data: Array(10).fill(0),
-        borderColor: '#00ffff',
-        backgroundColor: 'rgba(0,255,255,0.1)'
-      }]
-    };
-    const cpuChart = new Chart(ctx, {
-      type: 'line',
-      data: cpuData,
-      options: {
-        scales: {
-          y: { min: 0, max: 100 }
-        }
-      }
-    });
-
-    // נתונים חיים (simulate)
-    setInterval(() => {
-      const cpuUsage = Math.floor(Math.random() * 100); // מחליף לנתונים אמיתיים בהמשך
-      cpuData.datasets[0].data.push(cpuUsage);
-      cpuData.datasets[0].data.shift();
-      cpuChart.update();
-    }, 2000);
-
-    // WebSocket עדכון פנים בזמן אמת
+    // WebSocket לשינוי הפנים
     const ws = new WebSocket('wss://jarvis-visual.onrender.com');
     ws.onmessage = (event) => {
       const face = document.getElementById('jarvis-face');
@@ -121,7 +74,46 @@
         face.src = 'https://cdn.glitch.global/e2b1c048-c542-433a-a1b0-8c21b6c18e4c/closed.png?v=1745346349736';
       }
     };
+
+    // Waveform אנימציה
+    const waveCanvas = document.getElementById('waveform');
+    const waveCtx = waveCanvas.getContext('2d');
+    waveCanvas.width = waveCanvas.offsetWidth;
+    waveCanvas.height = waveCanvas.offsetHeight;
+
+    function drawWaveform() {
+      waveCtx.clearRect(0, 0, waveCanvas.width, waveCanvas.height);
+      waveCtx.beginPath();
+      for (let i = 0; i < waveCanvas.width; i += 5) {
+        const y = waveCanvas.height / 2 + Math.sin(i * 0.05 + Date.now() * 0.005) * 20;
+        waveCtx.lineTo(i, y);
+      }
+      waveCtx.strokeStyle = '#00ffff';
+      waveCtx.stroke();
+      requestAnimationFrame(drawWaveform);
+    }
+    drawWaveform();
+
+    // גרף CPU דינמי
+    const cpuCanvas = document.getElementById('cpuGraph');
+    const cpuCtx = cpuCanvas.getContext('2d');
+    cpuCanvas.width = cpuCanvas.offsetWidth;
+    cpuCanvas.height = cpuCanvas.offsetHeight;
+    let cpuData = [];
+
+    function drawCpuGraph() {
+      cpuCtx.clearRect(0, 0, cpuCanvas.width, cpuCanvas.height);
+      cpuCtx.beginPath();
+      cpuData.push(Math.random() * cpuCanvas.height);
+      if (cpuData.length > cpuCanvas.width) cpuData.shift();
+      cpuData.forEach((point, index) => {
+        cpuCtx.lineTo(index, cpuCanvas.height - point);
+      });
+      cpuCtx.strokeStyle = '#00ffff';
+      cpuCtx.stroke();
+      requestAnimationFrame(drawCpuGraph);
+    }
+    drawCpuGraph();
   </script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </body>
 </html>

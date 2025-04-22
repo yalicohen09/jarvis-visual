@@ -20,10 +20,14 @@ wss.on('connection', function connection(ws) {
   console.log('🔗 Client connected!');
   
   ws.on('message', function incoming(message) {
-    console.log('📩 received:', message);
+    const textMessage = message.toString(); // 🟠 המרה ל-String
+
+    console.log('📩 received:', textMessage); // מדפיס כמחרוזת רגילה
+
+    // שולח את המחרוזת לכל הקליינטים
     wss.clients.forEach(function each(client) {
       if (client.readyState === WebSocket.OPEN) {
-        client.send(message);
+        client.send(textMessage); // 🟢 שולח טקסט רגיל!
       }
     });
   });

@@ -5,14 +5,47 @@ body {
   font-family: 'Orbitron', sans-serif;
   height: 100vh;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
+}
+
+.top-bar {
+  width: 80%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.jarvis-title {
+  font-size: 36px;
+  font-weight: bold;
+}
+
+.clocks {
+  display: flex;
+  gap: 20px;
+}
+
+.zone {
+  font-size: 12px;
+  text-align: center;
+}
+
+.time {
+  font-size: 18px;
+  text-align: center;
+}
+
+#clock-israel {
+  font-size: 24px; /* שעה בישראל יותר גדולה */
 }
 
 .container {
   display: flex;
   justify-content: space-between;
   width: 80%;
+  margin-top: 20px;
 }
 
 .panel {

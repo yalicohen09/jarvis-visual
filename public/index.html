@@ -7,41 +7,62 @@
     body { 
       background: black; 
       display: flex; 
+      flex-direction: column;
       justify-content: center; 
       align-items: center; 
       height: 100vh; 
       margin: 0;
     }
     img { 
-      width: 1200px; /* גודל גדול */
+      width: 1200px; 
       max-width: 90vw;
       max-height: 90vh;
       transition: 0.3s; 
     }
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+    .blinking {
+      animation: blink 1s infinite;
+    }
   </style>
+  <link rel="stylesheet" href="wave.css">
 </head>
 <body>
+
+  <!-- התמונה של הפנים -->
   <img id="jarvis-face" 
        src="https://cdn.glitch.global/e2b1c048-c542-433a-a1b0-8c21b6c18e4c/closed.png?v=1745307044849" 
-       alt="Jarvis Face">
+       alt="Jarvis Face"/>
+
+  <!-- גלי קול -->
+  <div id="wave" class="hidden">
+    <div class="bar"></div>
+    <div class="bar"></div>
+    <div class="bar"></div>
+    <div class="bar"></div>
+    <div class="bar"></div>
+  </div>
 
   <script>
-    const ws = new WebSocket('https://jarvis-visual.onrender.com'); // תשנה לכתובת שלך!
-
-    ws.onopen = () => {
-      console.log('✅ WebSocket connected!');
-    };
+    const ws = new WebSocket('wss://jarvis-visual.onrender.com'); // כתובת ה-Render שלך
+    const face = document.getElementById('jarvis-face');
+    const wave = document.getElementById('wave');
 
     ws.onmessage = (event) => {
-      const face = document.getElementById('jarvis-face');
-      console.log('📩 Message received:', event.data);
-      
+      console.log('📩 Message:', event.data);
       if (event.data === 'start_talking') {
+        face.classList.add('blinking');
         face.src = 'https://cdn.glitch.global/e2b1c048-c542-433a-a1b0-8c21b6c18e4c/open.png?v=1745306016613';
+        wave.classList.remove('hidden');
       } else if (event.data === 'stop_talking') {
+        face.classList.remove('blinking');
         face.src = 'https://cdn.glitch.global/e2b1c048-c542-433a-a1b0-8c21b6c18e4c/closed.png?v=1745307044849';
+        wave.classList.add('hidden');
       }
     };
   </script>
+
 </body>
 </html>

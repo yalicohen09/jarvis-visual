@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Jarvis Face</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet">
   <style>
     body { 
       background: black; 
@@ -26,6 +27,13 @@
     .blinking {
       animation: blink 1s infinite;
     }
+    .clock {
+      color: cyan;
+      font-size: 36px;
+      font-family: 'Orbitron', sans-serif;
+      margin-top: 20px;
+      text-shadow: 0 0 10px cyan;
+    }
   </style>
   <link rel="stylesheet" href="wave.css">
 </head>
@@ -35,6 +43,9 @@
   <img id="jarvis-face" 
        src="https://cdn.glitch.global/e2b1c048-c542-433a-a1b0-8c21b6c18e4c/closed.png?v=1745307044849" 
        alt="Jarvis Face"/>
+
+  <!-- השעון -->
+  <div id="clock" class="clock"></div>
 
   <!-- גלי קול -->
   <div id="wave" class="hidden">
@@ -62,6 +73,17 @@
         wave.classList.add('hidden');
       }
     };
+
+    function updateClock() {
+      const now = new Date();
+      const israelTime = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Jerusalem" }));
+      const hours = israelTime.getHours().toString().padStart(2, '0');
+      const minutes = israelTime.getMinutes().toString().padStart(2, '0');
+      const seconds = israelTime.getSeconds().toString().padStart(2, '0');
+      document.getElementById('clock').innerText = `${hours}:${minutes}:${seconds}`;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
   </script>
 
 </body>

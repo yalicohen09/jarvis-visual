@@ -87,3 +87,16 @@ function updateLightsStatus() {
 }
 setInterval(updateLightsStatus, 5000); // כל 5 שניות
 updateLightsStatus();
+
+
+function updateNightModeStatus() {
+  fetch('/night-mode-status')
+    .then(res => res.json())
+    .then(data => {
+      const nightStatus = document.getElementById('night-mode-status');
+      nightStatus.innerText = `NIGHT MODE: ${data.night_mode ? 'ON' : 'OFF'}`;
+    });
+}
+setInterval(updateNightModeStatus, 5000); // כל 5 שניות
+updateNightModeStatus();
+

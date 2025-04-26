@@ -60,7 +60,7 @@ function drawBtcGraph() {
   fetch('/btc-price')
     .then(response => response.json())
     .then(data => {
-      const price = data.bitcoin.usd;
+      const price = data.price;
       document.getElementById('btc-price').innerText = `$${price}`;
 
       btcData.push(price);

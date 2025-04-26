@@ -49,7 +49,7 @@ function drawCpuGraph() {
 }
 drawCpuGraph();
 
-// גרף ביטקוין + עדכון מחיר עם בדיקה
+// גרף ביטקוין + עדכון מחיר עם בדיקה סופית
 const btcCanvas = document.getElementById('btcGraph');
 const btcCtx = btcCanvas.getContext('2d');
 btcCanvas.width = btcCanvas.offsetWidth;
@@ -60,17 +60,18 @@ function drawBtcGraph() {
   fetch('/btc-price')
     .then(response => response.json())
     .then(data => {
-      console.log('🔎 BTC DATA:', data);  // 🔥 תראה מה מגיע
+      console.log('🔎 BTC DATA:', data);  // תראה מה מגיע
 
-      const price = parseFloat(data.price).toFixed(2);
-      if (isNaN(price)) {
+      const rawPrice = Number(data.price);  // קלט מהשרת
+      if (!rawPrice) {
         console.error('❌ מחיר לא חוקי:', data.price);
         return;
       }
 
+      const price = rawPrice.toFixed(2);
       document.getElementById('btc-price').innerText = `$${price}`;
 
-      btcData.push(price);
+      btcData.push(rawPrice);
       if (btcData.length > btcCanvas.width) btcData.shift();
 
       btcCtx.clearRect(0, 0, btcCanvas.width, btcCanvas.height);
@@ -94,7 +95,6 @@ function drawBtcGraph() {
   setTimeout(drawBtcGraph, 5000);
 }
 drawBtcGraph();
-
 
 // עדכון השעונים
 function updateClocks() {

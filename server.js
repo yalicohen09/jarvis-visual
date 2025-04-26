@@ -2,6 +2,7 @@ const express = require('express');
 const http = require('http');
 const WebSocket = require('ws');
 const path = require('path');
+const axios = require('axios');  // ✅ ודא שזה למעלה
 
 const app = express();
 const server = http.createServer(app);
@@ -10,9 +11,9 @@ const wss = new WebSocket.Server({ server });
 // 🟢 משרת את הקבצים מהתיקייה public
 app.use(express.static(path.join(__dirname, 'public')));
 
-// 🔵 API ל־CPU Usage פייק (במקום אמיתי)
+// 🔵 API ל־CPU Usage פייק
 app.get('/cpu-usage', (req, res) => {
-  const usage = Math.random() * 0.5 + 0.3; // מחזיר ערך אקראי בין 30% ל־80%
+  const usage = Math.random() * 0.5 + 0.3; // פייק בין 30% ל־80%
   res.json({ usage });
 });
 
@@ -23,33 +24,26 @@ app.get('/night-mode-status', (req, res) => {
   res.json({ night_mode: nightModeOn });
 });
 
-
-// 🟠 Proxy ל־CoinGecko לקבלת מחיר ביטקוין
-const axios = require('axios');  // תוודא שיש לך axios מותקן
-
+// 🟠 Proxy ל־BTC Price (בלי לוגים)
 app.get('/btc-price', async (req, res) => {
   try {
     const response = await axios.get('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd');
     res.json(response.data);
   } catch (error) {
-    console.error('❌ שגיאה ב־BTC API:', error);
     res.status(500).json({ error: 'BTC API error' });
   }
 });
 
-// WebSocket עידכון מצב Night Mode ופנים
+// WebSocket לניהול Night Mode ופנים
 wss.on('connection', function connection(ws) {
-  console.log('🔗 Client connected!');
-  
   ws.on('message', function incoming(message) {
     const textMessage = message.toString();
-    console.log('📩 received:', textMessage);
 
-    // 🟠 עידכון Night Mode במצב אמיתי
+    // Night Mode
     if (textMessage === 'night_mode_on') nightModeOn = true;
     if (textMessage === 'night_mode_off') nightModeOn = false;
 
-    // 🟢 שולח את ההודעה לכל הקליינטים (גם לפנים)
+    // שולח את ההודעה לכל ה־Clients
     wss.clients.forEach(function each(client) {
       if (client.readyState === WebSocket.OPEN) {
         client.send(textMessage);
@@ -58,13 +52,13 @@ wss.on('connection', function connection(ws) {
   });
 });
 
-// 🔴 הגדרה שתחזיר את index.html לכל בקשה (כדי שלא יהיה 404)
+// דיפולט – מחזיר index.html
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// 🔵 מאזין לפורט של Render
+// מאזין לפורט
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, function () {
+server.listen(PORT, () => {
   console.log(`🚀 Server running on PORT ${PORT}`);
 });

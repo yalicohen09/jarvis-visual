@@ -28,7 +28,8 @@ function drawWaveform() {
 }
 drawWaveform();
 
-// גרף CPU אמיתי
+
+// גרף CPU דינמי
 const cpuCanvas = document.getElementById('cpuGraph');
 const cpuCtx = cpuCanvas.getContext('2d');
 cpuCanvas.width = cpuCanvas.offsetWidth;
@@ -36,28 +37,19 @@ cpuCanvas.height = cpuCanvas.offsetHeight;
 let cpuData = [];
 
 function drawCpuGraph() {
-  fetch('/cpu-usage')  // מביא נתוני CPU מהשרת
-    .then(response => response.json())
-    .then(data => {
-      cpuCtx.clearRect(0, 0, cpuCanvas.width, cpuCanvas.height);
-      cpuCtx.beginPath();
-      cpuData.push(data.usage * cpuCanvas.height);
-      if (cpuData.length > cpuCanvas.width) cpuData.shift();
-      cpuData.forEach((point, index) => {
-        cpuCtx.lineTo(index, cpuCanvas.height - point);
-      });
-      cpuCtx.strokeStyle = '#00ffff';
-      cpuCtx.stroke();
-    })
-    .catch(() => {
-      // במקרה שיש בעיה בחיבור לשרת
-      cpuCtx.clearRect(0, 0, cpuCanvas.width, cpuCanvas.height);
-      cpuCtx.fillStyle = '#ff0000';
-      cpuCtx.fillText('CPU ERROR', 10, 50);
-    });
+  cpuCtx.clearRect(0, 0, cpuCanvas.width, cpuCanvas.height);
+  cpuCtx.beginPath();
+  cpuData.push(Math.random() * cpuCanvas.height);
+  if (cpuData.length > cpuCanvas.width) cpuData.shift();
+  cpuData.forEach((point, index) => {
+    cpuCtx.lineTo(index, cpuCanvas.height - point);
+  });
+  cpuCtx.strokeStyle = '#00ffff';
+  cpuCtx.stroke();
   requestAnimationFrame(drawCpuGraph);
 }
 drawCpuGraph();
+
 
 // גרף ביטקוין + עדכון מחיר
 const btcCanvas = document.getElementById('btcGraph');

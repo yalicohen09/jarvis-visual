@@ -70,8 +70,9 @@ function drawBtcGraph() {
 
       const price = rawPrice.toFixed(2);
       document.getElementById('btc-price').innerText = `$${price}`;
-
-      btcData.push(rawPrice);
+      
+      btcData.push(Number(rawPrice));
+      
       if (btcData.length > btcCanvas.width) btcData.shift();
 
       btcCtx.clearRect(0, 0, btcCanvas.width, btcCanvas.height);

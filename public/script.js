@@ -34,30 +34,7 @@ function drawCpuGraph() {
 drawCpuGraph();
 
 
-// גרף CPU אמיתי מהשרת
-const cpuCanvas = document.getElementById('cpuGraph');
-const cpuCtx = cpuCanvas.getContext('2d');
-cpuCanvas.width = cpuCanvas.offsetWidth;
-cpuCanvas.height = cpuCanvas.offsetHeight;
-let cpuData = [];
 
-function drawCpuGraph() {
-  fetch('/cpu-usage')
-    .then(response => response.json())
-    .then(data => {
-      cpuCtx.clearRect(0, 0, cpuCanvas.width, cpuCanvas.height);
-      cpuCtx.beginPath();
-      cpuData.push(data.usage * cpuCanvas.height);
-      if (cpuData.length > cpuCanvas.width) cpuData.shift();
-      cpuData.forEach((point, index) => {
-        cpuCtx.lineTo(index, cpuCanvas.height - point);
-      });
-      cpuCtx.strokeStyle = '#00ffff';
-      cpuCtx.stroke();
-    });
-  requestAnimationFrame(drawCpuGraph);
-}
-drawCpuGraph();
 
 
 // עדכון השעונים

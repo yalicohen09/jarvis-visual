@@ -27,12 +27,13 @@ app.get('/night-mode-status', (req, res) => {
 // 🟠 Proxy ל־BTC Price (בלי לוגים)
 app.get('/btc-price', async (req, res) => {
   try {
-    const response = await axios.get('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd');
-    res.json(response.data);
+    const response = await axios.get('https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT');
+    res.json({ price: parseFloat(response.data.price) });
   } catch (error) {
     res.status(500).json({ error: 'BTC API error' });
   }
 });
+
 
 // WebSocket לניהול Night Mode ופנים
 wss.on('connection', function connection(ws) {

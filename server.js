@@ -27,11 +27,11 @@ app.get('/night-mode-status', (req, res) => {
 // 🟠 Proxy ל־BTC Price (בלי לוגים)
 app.get('/btc-price', async (req, res) => {
   try {
-    const response = await axios.get('https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT');
-    console.log('🔎 Binance API Response:', response.data);  // תראה מה באמת מגיע
-    res.json({ price: parseFloat(response.data.price) });
+    const response = await axios.get('https://api.coinbase.com/v2/prices/BTC-USD/spot');
+    console.log('🔎 Coinbase API Response:', response.data);
+    res.json({ price: parseFloat(response.data.data.amount) });
   } catch (error) {
-    console.error('❌ Binance API Error:', error);
+    console.error('❌ Coinbase API Error:', error);
     res.status(500).json({ error: 'BTC API error' });
   }
 });

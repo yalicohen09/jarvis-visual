@@ -15,18 +15,24 @@ const waveCtx = waveCanvas.getContext('2d');
 waveCanvas.width = waveCanvas.offsetWidth;
 waveCanvas.height = waveCanvas.offsetHeight;
 
-function drawWaveform() {
-  waveCtx.clearRect(0, 0, waveCanvas.width, waveCanvas.height);
-  waveCtx.beginPath();
-  for (let i = 0; i < waveCanvas.width; i += 5) {
-    const y = waveCanvas.height / 2 + Math.sin(i * 0.05 + Date.now() * 0.005) * 20;
-    waveCtx.lineTo(i, y);
-  }
-  waveCtx.strokeStyle = '#00ffff';
-  waveCtx.stroke();
-  requestAnimationFrame(drawWaveform);
+function drawCpuGraph() {
+  fetch('/cpu-usage')
+    .then(response => response.json())
+    .then(data => {
+      cpuCtx.clearRect(0, 0, cpuCanvas.width, cpuCanvas.height);
+      cpuCtx.beginPath();
+      cpuData.push(data.usage * cpuCanvas.height);
+      if (cpuData.length > cpuCanvas.width) cpuData.shift();
+      cpuData.forEach((point, index) => {
+        cpuCtx.lineTo(index, cpuCanvas.height - point);
+      });
+      cpuCtx.strokeStyle = '#00ffff';
+      cpuCtx.stroke();
+    });
+  requestAnimationFrame(drawCpuGraph);
 }
-drawWaveform();
+drawCpuGraph();
+
 
 // גרף CPU דינמי
 const cpuCanvas = document.getElementById('cpuGraph');

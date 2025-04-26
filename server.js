@@ -23,6 +23,20 @@ app.get('/night-mode-status', (req, res) => {
   res.json({ night_mode: nightModeOn });
 });
 
+
+// 🟠 Proxy ל־CoinGecko לקבלת מחיר ביטקוין
+const axios = require('axios');  // תוודא שיש לך axios מותקן
+
+app.get('/btc-price', async (req, res) => {
+  try {
+    const response = await axios.get('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd');
+    res.json(response.data);
+  } catch (error) {
+    console.error('❌ שגיאה ב־BTC API:', error);
+    res.status(500).json({ error: 'BTC API error' });
+  }
+});
+
 // WebSocket עידכון מצב Night Mode ופנים
 wss.on('connection', function connection(ws) {
   console.log('🔗 Client connected!');

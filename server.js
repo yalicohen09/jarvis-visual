@@ -29,6 +29,7 @@ app.get('/btc-price', async (req, res) => {
   try {
     const response = await axios.get('https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT');
     res.json({ price: parseFloat(response.data.price) });
+    res.json({ price: parseFloat(response.data.price) });
   } catch (error) {
     res.status(500).json({ error: 'BTC API error' });
   }

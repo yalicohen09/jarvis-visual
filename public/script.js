@@ -28,7 +28,6 @@ function drawWaveform() {
 }
 drawWaveform();
 
-
 // גרף CPU דינמי
 const cpuCanvas = document.getElementById('cpuGraph');
 const cpuCtx = cpuCanvas.getContext('2d');
@@ -49,7 +48,6 @@ function drawCpuGraph() {
   requestAnimationFrame(drawCpuGraph);
 }
 drawCpuGraph();
-
 
 // גרף ביטקוין + עדכון מחיר
 const btcCanvas = document.getElementById('btcGraph');

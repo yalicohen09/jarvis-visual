@@ -15,8 +15,28 @@ const waveCtx = waveCanvas.getContext('2d');
 waveCanvas.width = waveCanvas.offsetWidth;
 waveCanvas.height = waveCanvas.offsetHeight;
 
+function drawWaveform() {
+  waveCtx.clearRect(0, 0, waveCanvas.width, waveCanvas.height);
+  waveCtx.beginPath();
+  for (let i = 0; i < waveCanvas.width; i += 5) {
+    const y = waveCanvas.height / 2 + Math.sin(i * 0.05 + Date.now() * 0.005) * 20;
+    waveCtx.lineTo(i, y);
+  }
+  waveCtx.strokeStyle = '#00ffff';
+  waveCtx.stroke();
+  requestAnimationFrame(drawWaveform);
+}
+drawWaveform();
+
+// גרף CPU אמיתי
+const cpuCanvas = document.getElementById('cpuGraph');
+const cpuCtx = cpuCanvas.getContext('2d');
+cpuCanvas.width = cpuCanvas.offsetWidth;
+cpuCanvas.height = cpuCanvas.offsetHeight;
+let cpuData = [];
+
 function drawCpuGraph() {
-  fetch('/cpu-usage')
+  fetch('/cpu-usage')  // מביא נתוני CPU מהשרת
     .then(response => response.json())
     .then(data => {
       cpuCtx.clearRect(0, 0, cpuCanvas.width, cpuCanvas.height);
@@ -28,14 +48,16 @@ function drawCpuGraph() {
       });
       cpuCtx.strokeStyle = '#00ffff';
       cpuCtx.stroke();
+    })
+    .catch(() => {
+      // במקרה שיש בעיה בחיבור לשרת
+      cpuCtx.clearRect(0, 0, cpuCanvas.width, cpuCanvas.height);
+      cpuCtx.fillStyle = '#ff0000';
+      cpuCtx.fillText('CPU ERROR', 10, 50);
     });
   requestAnimationFrame(drawCpuGraph);
 }
 drawCpuGraph();
-
-
-
-
 
 // עדכון השעונים
 function updateClocks() {
@@ -55,7 +77,7 @@ function updateClocks() {
 setInterval(updateClocks, 1000);
 updateClocks();
 
-// בדיקת מצב האור דרך IFTTT (דמה)
+// בדיקת מצב האור
 function updateLightsStatus() {
   fetch('https://maker.ifttt.com/trigger/check_lights/with/key/cgNYs4fx61JOz-4SO4i_D0eFM5rWbuC0kEQawB_JqAT')
     .then(res => res.json())
@@ -67,18 +89,20 @@ function updateLightsStatus() {
       document.getElementById('lights-status').innerText = "LIGHTS: ERROR";
     });
 }
-setInterval(updateLightsStatus, 5000); // כל 5 שניות
+setInterval(updateLightsStatus, 5000);
 updateLightsStatus();
 
-
+// בדיקת מצב ה־Night Mode
 function updateNightModeStatus() {
   fetch('/night-mode-status')
     .then(res => res.json())
     .then(data => {
       const nightStatus = document.getElementById('night-mode-status');
       nightStatus.innerText = `NIGHT MODE: ${data.night_mode ? 'ON' : 'OFF'}`;
+    })
+    .catch(() => {
+      document.getElementById('night-mode-status').innerText = "NIGHT MODE: ERROR";
     });
 }
-setInterval(updateNightModeStatus, 5000); // כל 5 שניות
+setInterval(updateNightModeStatus, 5000);
 updateNightModeStatus();
-

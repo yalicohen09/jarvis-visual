@@ -59,6 +59,44 @@ function drawCpuGraph() {
 }
 drawCpuGraph();
 
+// גרף ביטקוין + עדכון מחיר
+const btcCanvas = document.getElementById('btcGraph');
+const btcCtx = btcCanvas.getContext('2d');
+btcCanvas.width = btcCanvas.offsetWidth;
+btcCanvas.height = btcCanvas.offsetHeight;
+let btcData = [];
+
+function drawBtcGraph() {
+  fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd')
+    .then(response => response.json())
+    .then(data => {
+      const price = data.bitcoin.usd;
+      document.getElementById('btc-price').innerText = `$${price}`;
+
+      btcData.push(price);
+      if (btcData.length > btcCanvas.width) btcData.shift();
+
+      btcCtx.clearRect(0, 0, btcCanvas.width, btcCanvas.height);
+      btcCtx.beginPath();
+      btcData.forEach((point, index) => {
+        const scaledPoint = btcCanvas.height - ((point - Math.min(...btcData)) / (Math.max(...btcData) - Math.min(...btcData) || 1)) * btcCanvas.height;
+        btcCtx.lineTo(index, scaledPoint);
+      });
+      btcCtx.strokeStyle = '#00ffff';
+      btcCtx.shadowColor = '#00ffff';
+      btcCtx.shadowBlur = 10;
+      btcCtx.lineWidth = 2;
+      btcCtx.stroke();
+    })
+    .catch(() => {
+      btcCtx.clearRect(0, 0, btcCanvas.width, btcCanvas.height);
+      btcCtx.fillStyle = '#ff0000';
+      btcCtx.fillText('BTC ERROR', 10, 50);
+    });
+  setTimeout(drawBtcGraph, 5000);
+}
+drawBtcGraph();
+
 // עדכון השעונים
 function updateClocks() {
   const now = new Date();

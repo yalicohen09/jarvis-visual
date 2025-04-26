@@ -28,12 +28,14 @@ app.get('/night-mode-status', (req, res) => {
 app.get('/btc-price', async (req, res) => {
   try {
     const response = await axios.get('https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT');
-    res.json({ price: parseFloat(response.data.price) });
+    console.log('🔎 Binance API Response:', response.data);  // תראה מה באמת מגיע
     res.json({ price: parseFloat(response.data.price) });
   } catch (error) {
+    console.error('❌ Binance API Error:', error);
     res.status(500).json({ error: 'BTC API error' });
   }
 });
+
 
 
 // WebSocket לניהול Night Mode ופנים

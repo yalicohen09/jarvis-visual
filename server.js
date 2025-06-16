@@ -2,18 +2,18 @@ const express = require('express');
 const http = require('http');
 const WebSocket = require('ws');
 const path = require('path');
-const axios = require('axios');  // ✅ ודא שזה למעלה
+const axios = require('axios');
 
 const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
-// 🟢 משרת את הקבצים מהתיקייה public
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.json()); // ✅ Middleware לקריאת JSON
 
 // 🔵 API ל־CPU Usage פייק
 app.get('/cpu-usage', (req, res) => {
-  const usage = Math.random() * 0.5 + 0.3; // פייק בין 30% ל־80%
+  const usage = Math.random() * 0.5 + 0.3;
   res.json({ usage });
 });
 
@@ -24,30 +24,43 @@ app.get('/night-mode-status', (req, res) => {
   res.json({ night_mode: nightModeOn });
 });
 
-// 🟠 Proxy ל־BTC Price (בלי לוגים)
+// 🟠 Proxy ל־BTC Price
 app.get('/btc-price', async (req, res) => {
   try {
     const response = await axios.get('https://api.coinbase.com/v2/prices/BTC-USD/spot');
-    console.log('🔎 Coinbase API Response:', response.data);
     res.json({ price: parseFloat(response.data.data.amount) });
   } catch (error) {
-    console.error('❌ Coinbase API Error:', error);
+    console.error('❌ BTC API Error:', error);
     res.status(500).json({ error: 'BTC API error' });
   }
 });
 
+// 🟡 NEW: קבלת הודעות חדשות ושידור ל־WebSocket
+let latestNews = [];
 
+app.post('/api/news', (req, res) => {
+  const { message } = req.body;
+  if (!message) return res.status(400).send('Missing message');
+  latestNews.push(message);
+  if (latestNews.length > 50) latestNews.shift(); // שמור עד 50 הודעות
 
-// WebSocket לניהול Night Mode ופנים
+  wss.clients.forEach(client => {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(JSON.stringify({ type: 'news', message }));
+    }
+  });
+
+  res.sendStatus(200);
+});
+
+// WebSocket לניהול Night Mode + חדשות
 wss.on('connection', function connection(ws) {
   ws.on('message', function incoming(message) {
     const textMessage = message.toString();
 
-    // Night Mode
     if (textMessage === 'night_mode_on') nightModeOn = true;
     if (textMessage === 'night_mode_off') nightModeOn = false;
 
-    // שולח את ההודעה לכל ה־Clients
     wss.clients.forEach(function each(client) {
       if (client.readyState === WebSocket.OPEN) {
         client.send(textMessage);
@@ -56,7 +69,7 @@ wss.on('connection', function connection(ws) {
   });
 });
 
-// דיפולט – מחזיר index.html
+// ברירת מחדל – טען index.html
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });

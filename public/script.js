@@ -1,6 +1,21 @@
 // WebSocket לשינוי הפנים
 const ws = new WebSocket('wss://jarvis-visual.onrender.com');
 ws.onmessage = (event) => {
+  try {
+    const data = JSON.parse(event.data);
+    if (data.type === 'news') {
+      const newsFeed = document.getElementById('news-feed');
+      const item = document.createElement('div');
+      item.textContent = '🟡 ' + data.message;
+      item.style.borderBottom = '1px solid #444';
+      item.style.padding = '4px';
+      newsFeed.prepend(item);
+      return;
+    }
+  } catch (e) {
+    // לא JSON? אולי זה night_mode או דיבור
+  }
+
   const face = document.getElementById('jarvis-face');
   if (event.data === 'start_talking') {
     face.src = 'https://cdn.glitch.global/e2b1c048-c542-433a-a1b0-8c21b6c18e4c/open.png?v=1745346330557';
@@ -8,6 +23,7 @@ ws.onmessage = (event) => {
     face.src = 'https://cdn.glitch.global/e2b1c048-c542-433a-a1b0-8c21b6c18e4c/closed.png?v=1745346349736';
   }
 };
+
 
 // Waveform אנימציה
 const waveCanvas = document.getElementById('waveform');

@@ -1,8 +1,15 @@
-// WebSocket לשינוי הפנים
+// WebSocket לשינוי הפנים + קליטת חדשות
 const ws = new WebSocket('wss://jarvis-visual.onrender.com');
+
+ws.onopen = () => {
+  console.log("✅ WebSocket התחבר בהצלחה");
+};
+
 ws.onmessage = (event) => {
   try {
     const data = JSON.parse(event.data);
+    console.log("📨 קיבלתי מהשרת:", data);
+
     if (data.type === 'news') {
       const newsFeed = document.getElementById('news-feed');
       const item = document.createElement('div');
@@ -13,7 +20,7 @@ ws.onmessage = (event) => {
       return;
     }
   } catch (e) {
-    // לא JSON? אולי זה night_mode או דיבור
+    console.warn("🔵 לא JSON – אולי פקודת דיבור רגילה:", event.data);
   }
 
   const face = document.getElementById('jarvis-face');
@@ -23,6 +30,7 @@ ws.onmessage = (event) => {
     face.src = 'https://cdn.glitch.global/e2b1c048-c542-433a-a1b0-8c21b6c18e4c/closed.png?v=1745346349736';
   }
 };
+
 
 
 // Waveform אנימציה

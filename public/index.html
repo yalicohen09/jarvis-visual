@@ -9,26 +9,11 @@
   <div class="top-bar">
     <div class="jarvis-title">JARVIS</div>
     <div class="clocks">
-      <div>
-        <div class="zone">ISRAEL</div>
-        <div class="time" id="clock-israel"></div>
-      </div>
-      <div>
-        <div class="zone">LONDON</div>
-        <div class="time" id="clock-london"></div>
-      </div>
-      <div>
-        <div class="zone">NEW YORK</div>
-        <div class="time" id="clock-ny"></div>
-      </div>
-      <div>
-        <div class="zone">MOSCOW</div>
-        <div class="time" id="clock-moscow"></div>
-      </div>
-      <div>
-        <div class="zone">PARIS</div>
-        <div class="time" id="clock-paris"></div>
-      </div>
+      <div><div class="zone">ISRAEL</div><div class="time" id="clock-israel"></div></div>
+      <div><div class="zone">LONDON</div><div class="time" id="clock-london"></div></div>
+      <div><div class="zone">NEW YORK</div><div class="time" id="clock-ny"></div></div>
+      <div><div class="zone">MOSCOW</div><div class="time" id="clock-moscow"></div></div>
+      <div><div class="zone">PARIS</div><div class="time" id="clock-paris"></div></div>
     </div>
   </div>
 
@@ -36,7 +21,6 @@
     <div class="panel side-panel glow">
       <h3>CPU USAGE</h3>
       <canvas id="cpuGraph" class="graph"></canvas>
-      
       <h3>BITCOIN PRICE</h3>
       <div id="btc-price">$...</div>
       <canvas id="btcGraph" class="graph"></canvas>
@@ -50,9 +34,15 @@
     <div class="panel side-panel glow">
       <h3>CONTROLS</h3>
       <p id="lights-status">LIGHTS: ...</p>
-      <p id="night-mode-status">NIGHT MODE: ...</p> <!-- הוספה -->
+      <p id="night-mode-status">NIGHT MODE: ...</p>
       <p>THERMOSTAT</p>
       <p>SECURITY</p>
+    </div>
+
+    <!-- ✅ פאנל חדש לעדכוני ביטחון -->
+    <div class="panel side-panel glow">
+      <h3>עדכוני ביטחון</h3>
+      <div id="news-feed" style="max-height: 300px; overflow-y: auto;"></div>
     </div>
   </div>
 

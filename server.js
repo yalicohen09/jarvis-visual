@@ -1,81 +1,76 @@
-const express = require('express');
-const http = require('http');
-const WebSocket = require('ws');
-const path = require('path');
-const axios = require('axios');
+const express = require("express");
+const fetch = require("node-fetch");
+const { google } = require("googleapis");
+const bodyParser = require("body-parser");
 
 const app = express();
-const server = http.createServer(app);
-const wss = new WebSocket.Server({ server });
+const PORT = process.env.PORT || 5000;
 
-app.use(express.static(path.join(__dirname, 'public')));
-app.use(express.json()); // ✅ Middleware לקריאת JSON
+// ===== OAuth הגדרות =====
+const oauth2Client = new google.auth.OAuth2(
+  "1060382255075-a51dbvl8uncects4gdq6q0j349p448f1.apps.googleusercontent.com", // Client ID שלך
+  "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", // Client Secret שלך
+  "https://jarvis-visual.onrender.com/oauth2callback" // הכתובת הרשומה ב-Google Console
+);
 
-// 🔵 API ל־CPU Usage פייק
-app.get('/cpu-usage', (req, res) => {
-  const usage = Math.random() * 0.5 + 0.3;
-  res.json({ usage });
+let tokens = null;
+
+app.use(bodyParser.json());
+app.use(express.static("public"));
+
+// ===== שלב 1: התחברות ל-Google Fit =====
+app.get("/auth", (req, res) => {
+  const url = oauth2Client.generateAuthUrl({
+    access_type: "offline",
+    scope: [
+      "https://www.googleapis.com/auth/fitness.heart_rate.read",
+      "https://www.googleapis.com/auth/fitness.activity.read",
+      "https://www.googleapis.com/auth/fitness.sleep.read"
+    ],
+  });
+  res.redirect(url);
 });
 
-// 🟣 Night Mode Status
-let nightModeOn = false;
-
-app.get('/night-mode-status', (req, res) => {
-  res.json({ night_mode: nightModeOn });
+// ===== שלב 2: קבלת ה-code בחזרה =====
+app.get("/oauth2callback", async (req, res) => {
+  const { code } = req.query;
+  const { tokens: newTokens } = await oauth2Client.getToken(code);
+  oauth2Client.setCredentials(newTokens);
+  tokens = newTokens;
+  console.log("✅ התחברות הצליחה, קיבלתי טוקן");
+  res.send("✅ התחברת בהצלחה! עכשיו האתר יכול להביא נתוני בריאות מה-Google Fit שלך.");
 });
 
-// 🟠 Proxy ל־BTC Price
-app.get('/btc-price', async (req, res) => {
+// ===== שלב 3: Endpoint שמחזיר דופק אמיתי =====
+app.get("/garmin", async (req, res) => {
   try {
-    const response = await axios.get('https://api.coinbase.com/v2/prices/BTC-USD/spot');
-    res.json({ price: parseFloat(response.data.data.amount) });
-  } catch (error) {
-    console.error('❌ BTC API Error:', error);
-    res.status(500).json({ error: 'BTC API error' });
+    if (!tokens) {
+      return res.status(401).json({ error: "User not authenticated. Go to /auth first." });
+    }
+
+    const fitness = google.fitness({ version: "v1", auth: oauth2Client });
+
+    const datasetId = `${Date.now() - 3600000}000000-${Date.now()}000000`; // שעה אחרונה
+    const response = await fitness.users.dataSources.datasets.get({
+      userId: "me",
+      dataSourceId: "derived:com.google.heart_rate.bpm:com.google.android.gms:merge_heart_rate_bpm",
+      datasetId: datasetId
+    });
+
+    const points = response.data.point || [];
+    const hr = points.length > 0 ? points[points.length - 1].value[0].fpVal : "--";
+
+    res.json({
+      heartRate: hr,
+      bloodPressure: "--/--", // Google Fit לא מחזיר לחץ דם
+      trainingReadiness: "--" // אין ב-Google Fit, רק ב-Garmin
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch Google Fit data" });
   }
 });
 
-// 🟡 NEW: קבלת הודעות חדשות ושידור ל־WebSocket
-let latestNews = [];
-
-app.post('/api/news', (req, res) => {
-  const { message } = req.body;
-  if (!message) return res.status(400).send('Missing message');
-  latestNews.push(message);
-  if (latestNews.length > 50) latestNews.shift(); // שמור עד 50 הודעות
-
-  wss.clients.forEach(client => {
-    if (client.readyState === WebSocket.OPEN) {
-      client.send(JSON.stringify({ type: 'news', message }));
-    }
-  });
-
-  res.sendStatus(200);
-});
-
-// WebSocket לניהול Night Mode + חדשות
-wss.on('connection', function connection(ws) {
-  ws.on('message', function incoming(message) {
-    const textMessage = message.toString();
-
-    if (textMessage === 'night_mode_on') nightModeOn = true;
-    if (textMessage === 'night_mode_off') nightModeOn = false;
-
-    wss.clients.forEach(function each(client) {
-      if (client.readyState === WebSocket.OPEN) {
-        client.send(textMessage);
-      }
-    });
-  });
-});
-
-// ברירת מחדל – טען index.html
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
-// מאזין לפורט
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-  console.log(`🚀 Server running on PORT ${PORT}`);
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
 });

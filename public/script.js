@@ -121,25 +121,41 @@ setInterval(updateClocks, 1000);
 updateClocks();
 
 // --- נתוני Garmin (דמו כרגע) ---
+async function checkAuth() {
+  try {
+    const r = await fetch("/auth/status", { cache: "no-store" });
+    const j = await r.json();
+    return !!j.authenticated;
+  } catch {
+    return false;
+  }
+}
+
 function setHealthText(id, text) {
   const el = document.getElementById(id);
-  if (!el) return;
-  el.innerText = text;
+  if (el) el.innerText = text;
 }
 
 async function updateGarmin() {
+  const authed = await checkAuth();
+  const connectBtn = document.getElementById("connect-fit-btn");
+  if (!authed) {
+    if (connectBtn) connectBtn.style.display = "block";
+    // נציג placeholderים ולא נבצע רידיירקט אוטומטי
+    setHealthText("garmin-hr",        "❤️ דופק: --");
+    setHealthText("garmin-bp",        "🩸 לחץ דם: --/--");
+    setHealthText("garmin-readiness", "⚡ מוכנות לאימון: --");
+    setHealthText("garmin-steps",     "👣 צעדים: --");
+    setHealthText("garmin-calories",  "🔥 קלוריות: --");
+    setHealthText("garmin-sleep",     "💤 שינה: --");
+    return;
+  } else if (connectBtn) {
+    connectBtn.style.display = "none";
+  }
+
   try {
     const res = await fetch("/garmin", { cache: "no-store" });
-    if (!res.ok) {
-      // אם לא מאומתים – נתחבר
-      if (res.status === 401) {
-        console.warn("Not authenticated → redirecting to /auth");
-        window.location.href = "/auth";
-        return;
-      }
-      throw new Error("Bad response from /garmin");
-    }
-
+    if (!res.ok) throw new Error("bad response");
     const data = await res.json();
 
     const hr   = (data.heartRate ?? "--");
@@ -157,15 +173,17 @@ async function updateGarmin() {
     setHealthText("garmin-sleep",     `💤 שינה: ${slp} דקות`);
   } catch (e) {
     console.error("Garmin panel error:", e);
-    setHealthText("garmin-hr",        "❤️ דופק: --");
-    setHealthText("garmin-bp",        "🩸 לחץ דם: --/--");
-    setHealthText("garmin-readiness", "⚡ מוכנות לאימון: --");
-    setHealthText("garmin-steps",     "👣 צעדים: --");
-    setHealthText("garmin-calories",  "🔥 קלוריות: --");
-    setHealthText("garmin-sleep",     "💤 שינה: --");
   }
+}
+
+const btn = document.getElementById("connect-fit-btn");
+if (btn) {
+  btn.addEventListener("click", () => {
+    window.location.href = "/auth";
+  });
 }
 
 setInterval(updateGarmin, 8000);
 updateGarmin();
+
 

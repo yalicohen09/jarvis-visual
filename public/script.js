@@ -121,26 +121,51 @@ setInterval(updateClocks, 1000);
 updateClocks();
 
 // --- נתוני Garmin (דמו כרגע) ---
-function updateGarmin() {
-  fetch("/garmin")
-    .then(res => res.json())
-    .then(data => {
-      document.getElementById("garmin-hr").innerText = `❤️ דופק: ${data.heartRate} BPM`;
-      document.getElementById("garmin-bp").innerText = `🩸 לחץ דם: ${data.bloodPressure}`;
-      document.getElementById("garmin-readiness").innerText = `⚡ מוכנות לאימון: ${data.trainingReadiness}`;
-      document.getElementById("garmin-steps").innerText = `👣 צעדים: ${data.steps}`;
-      document.getElementById("garmin-calories").innerText = `🔥 קלוריות: ${data.calories}`;
-      document.getElementById("garmin-sleep").innerText = `💤 שינה: ${data.sleep} דקות`;
-    })
-    .catch(() => {
-      document.getElementById("garmin-hr").innerText = "❤️ דופק: ERROR";
-      document.getElementById("garmin-bp").innerText = "🩸 לחץ דם: ERROR";
-      document.getElementById("garmin-readiness").innerText = "⚡ מוכנות לאימון: ERROR";
-      document.getElementById("garmin-steps").innerText = "👣 צעדים: ERROR";
-      document.getElementById("garmin-calories").innerText = "🔥 קלוריות: ERROR";
-      document.getElementById("garmin-sleep").innerText = "💤 שינה: ERROR";
-    });
+function setHealthText(id, text) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.innerText = text;
 }
 
-setInterval(updateGarmin, 10000);
+async function updateGarmin() {
+  try {
+    const res = await fetch("/garmin", { cache: "no-store" });
+    if (!res.ok) {
+      // אם לא מאומתים – נתחבר
+      if (res.status === 401) {
+        console.warn("Not authenticated → redirecting to /auth");
+        window.location.href = "/auth";
+        return;
+      }
+      throw new Error("Bad response from /garmin");
+    }
+
+    const data = await res.json();
+
+    const hr   = (data.heartRate ?? "--");
+    const bp   = (data.bloodPressure ?? "--/--");
+    const tr   = (data.trainingReadiness ?? "--");
+    const st   = (data.steps ?? 0);
+    const cal  = (data.calories ?? 0);
+    const slp  = (data.sleep ?? 0);
+
+    setHealthText("garmin-hr",        `❤️ דופק: ${hr} BPM`);
+    setHealthText("garmin-bp",        `🩸 לחץ דם: ${bp}`);
+    setHealthText("garmin-readiness", `⚡ מוכנות לאימון: ${tr}`);
+    setHealthText("garmin-steps",     `👣 צעדים: ${st}`);
+    setHealthText("garmin-calories",  `🔥 קלוריות: ${cal}`);
+    setHealthText("garmin-sleep",     `💤 שינה: ${slp} דקות`);
+  } catch (e) {
+    console.error("Garmin panel error:", e);
+    setHealthText("garmin-hr",        "❤️ דופק: --");
+    setHealthText("garmin-bp",        "🩸 לחץ דם: --/--");
+    setHealthText("garmin-readiness", "⚡ מוכנות לאימון: --");
+    setHealthText("garmin-steps",     "👣 צעדים: --");
+    setHealthText("garmin-calories",  "🔥 קלוריות: --");
+    setHealthText("garmin-sleep",     "💤 שינה: --");
+  }
+}
+
+setInterval(updateGarmin, 8000);
 updateGarmin();
+

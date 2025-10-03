@@ -6,11 +6,11 @@ import bodyParser from "body-parser";
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// ===== OAuth הגדרות =====
+// ===== OAuth =====
 const oauth2Client = new google.auth.OAuth2(
   "1060382255075-a51dbvl8uncects4gdq6q0j349p448f1.apps.googleusercontent.com", // Client ID
   "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", // Client Secret
-  "https://jarvis-visual.onrender.com/oauth2callback" // Redirect URI מ-Google Console
+  "https://jarvis-visual.onrender.com/oauth2callback" // Redirect URI
 );
 
 let tokens = null;
@@ -26,7 +26,8 @@ app.get("/auth", (req, res) => {
     scope: [
       "https://www.googleapis.com/auth/fitness.heart_rate.read",
       "https://www.googleapis.com/auth/fitness.activity.read",
-      "https://www.googleapis.com/auth/fitness.sleep.read"
+      "https://www.googleapis.com/auth/fitness.sleep.read",
+      "https://www.googleapis.com/auth/fitness.body.read"
     ],
   });
   res.redirect(url);
@@ -40,14 +41,14 @@ app.get("/oauth2callback", async (req, res) => {
     oauth2Client.setCredentials(newTokens);
     tokens = newTokens;
     console.log("✅ התחברות הצליחה, קיבלתי טוקן");
-    res.send("✅ התחברת בהצלחה! עכשיו האתר יכול להביא נתוני בריאות מה-Google Fit שלך.");
+    res.send("✅ התחברת בהצלחה ל-Google Fit! עכשיו האתר יכול להביא נתוני בריאות אמיתיים.");
   } catch (err) {
     console.error("❌ שגיאה בקבלת טוקן:", err);
     res.status(500).send("שגיאה בהתחברות ל-Google Fit");
   }
 });
 
-// ===== שלב 3: Endpoint שמחזיר דופק אמיתי =====
+// ===== שלב 3: Endpoint בריאות =====
 app.get("/garmin", async (req, res) => {
   try {
     if (!tokens) {
@@ -56,21 +57,70 @@ app.get("/garmin", async (req, res) => {
 
     const fitness = google.fitness({ version: "v1", auth: oauth2Client });
 
-    const datasetId = `${Date.now() - 3600000}000000-${Date.now()}000000`; // שעה אחרונה
-    const response = await fitness.users.dataSources.datasets.get({
+    // טווח 24 שעות אחורה
+    const startTime = Date.now() - 86400000;
+    const endTime = Date.now();
+
+    // --- דופק אחרון (10 דקות אחורה) ---
+    const hrDataset = `${Date.now() - 600000}000000-${Date.now()}000000`;
+    const hrResponse = await fitness.users.dataSources.datasets.get({
       userId: "me",
       dataSourceId: "derived:com.google.heart_rate.bpm:com.google.android.gms:merge_heart_rate_bpm",
-      datasetId: datasetId
+      datasetId: hrDataset
     });
+    const hrPoints = hrResponse.data.point || [];
+    const heartRate = hrPoints.length > 0 ? hrPoints[hrPoints.length - 1].value[0].fpVal : "--";
 
-    const points = response.data.point || [];
-    const hr = points.length > 0 ? points[points.length - 1].value[0].fpVal : "--";
+    // --- צעדים ---
+    const stepsResponse = await fitness.users.dataset.aggregate({
+      userId: "me",
+      requestBody: {
+        aggregateBy: [{ dataTypeName: "com.google.step_count.delta" }],
+        bucketByTime: { durationMillis: 86400000 },
+        startTimeMillis: startTime,
+        endTimeMillis: endTime
+      }
+    });
+    const steps = stepsResponse.data.bucket[0]?.dataset[0]?.point[0]?.value[0]?.intVal || 0;
+
+    // --- קלוריות ---
+    const calResponse = await fitness.users.dataset.aggregate({
+      userId: "me",
+      requestBody: {
+        aggregateBy: [{ dataTypeName: "com.google.calories.expended" }],
+        bucketByTime: { durationMillis: 86400000 },
+        startTimeMillis: startTime,
+        endTimeMillis: endTime
+      }
+    });
+    const calories = calResponse.data.bucket[0]?.dataset[0]?.point[0]?.value[0]?.fpVal || 0;
+
+    // --- שינה (סה"כ דקות שינה ב-24 שעות אחרונות) ---
+    const sleepResponse = await fitness.users.dataset.aggregate({
+      userId: "me",
+      requestBody: {
+        aggregateBy: [{ dataTypeName: "com.google.sleep.segment" }],
+        bucketByTime: { durationMillis: 86400000 },
+        startTimeMillis: startTime,
+        endTimeMillis: endTime
+      }
+    });
+    let sleepMinutes = 0;
+    if (sleepResponse.data.bucket?.[0]?.dataset?.[0]?.point) {
+      sleepResponse.data.bucket[0].dataset[0].point.forEach(p => {
+        sleepMinutes += (p.endTimeNanos - p.startTimeNanos) / 1e9 / 60;
+      });
+    }
 
     res.json({
-      heartRate: hr,
-      bloodPressure: "--/--", // Google Fit לא מחזיר לחץ דם
-      trainingReadiness: "--" // אין ב-Google Fit
+      heartRate,
+      steps,
+      calories: Math.round(calories),
+      sleep: Math.round(sleepMinutes),
+      bloodPressure: "--/--",       // Google Fit לא מספק
+      trainingReadiness: "--"       // אין ב-Google Fit
     });
+
   } catch (err) {
     console.error("❌ שגיאה בשליפת נתונים:", err);
     res.status(500).json({ error: "Failed to fetch Google Fit data" });

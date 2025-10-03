@@ -34,15 +34,24 @@
     </div>
 
     <!-- צד ימין -->
-<div class="panel side-panel glow">
-  <h3>GARMIN HEALTH</h3>
-  <p id="garmin-hr">❤️ דופק: ...</p>
-  <p id="garmin-bp">🩸 לחץ דם: ...</p>
-  <p id="garmin-readiness">⚡ מוכנות לאימון: ...</p>
-  <p id="garmin-steps">👣 צעדים: ...</p>
-  <p id="garmin-calories">🔥 קלוריות: ...</p>
-  <p id="garmin-sleep">💤 שינה: ...</p>
+<div class="panel side-panel glow health-panel">
+  <h3 class="health-title">GARMIN HEALTH</h3>
+
+  <!-- כפתור התחברות יוצג רק כשלא מחוברים -->
+  <button id="connect-fit-btn" class="connect-fit-btn" style="display:none">התחבר ל-Google Fit</button>
+
+  <div class="health-metric" id="garmin-hr">❤️ דופק: ...</div>
+  <div class="health-metric" id="garmin-bp">🩸 לחץ דם: ...</div>
+  <div class="health-metric" id="garmin-readiness">⚡ מוכנות לאימון: ...</div>
+  <div class="health-metric" id="garmin-steps">👣 צעדים: ...</div>
+  <div class="health-metric" id="garmin-calories">🔥 קלוריות: ...</div>
+  <div class="health-metric" id="garmin-sleep">💤 שינה: ...</div>
+
+  <div class="health-footnote">
+    נתונים מסונכרנים מ-Google Fit. ייתכנו עיכובים קצרים בסנכרון מהשעון.
+  </div>
 </div>
+
 
   </div>
 

@@ -122,16 +122,19 @@ updateClocks();
 
 // --- נתוני Garmin (דמו כרגע) ---
 function updateGarmin() {
-  // בעתיד כאן נעשה fetch לשרת שלך שמביא נתוני Garmin אמיתיים
-  const hr = Math.floor(60 + Math.random() * 40); 
-  const bpSystolic = 110 + Math.floor(Math.random() * 20);
-  const bpDiastolic = 70 + Math.floor(Math.random() * 15);
-  const readiness = Math.floor(50 + Math.random() * 50);
-
-  document.getElementById("garmin-hr").innerText = `❤️ דופק: ${hr} BPM`;
-  document.getElementById("garmin-bp").innerText = `🩸 לחץ דם: ${bpSystolic}/${bpDiastolic}`;
-  document.getElementById("garmin-readiness").innerText = `⚡ מוכנות לאימון: ${readiness}%`;
+  fetch("/garmin")
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById("garmin-hr").innerText = `❤️ דופק: ${data.heartRate} BPM`;
+      document.getElementById("garmin-bp").innerText = `🩸 לחץ דם: ${data.bloodPressure}`;
+      document.getElementById("garmin-readiness").innerText = `⚡ מוכנות לאימון: ${data.trainingReadiness}`;
+    })
+    .catch(() => {
+      document.getElementById("garmin-hr").innerText = "❤️ דופק: ERROR";
+      document.getElementById("garmin-bp").innerText = "🩸 לחץ דם: ERROR";
+      document.getElementById("garmin-readiness").innerText = "⚡ מוכנות לאימון: ERROR";
+    });
 }
 
-setInterval(updateGarmin, 5000);
+setInterval(updateGarmin, 10000);
 updateGarmin();

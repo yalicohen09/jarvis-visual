@@ -1,4 +1,4 @@
-// WebSocket לשינוי הפנים + קליטת חדשות
+// WebSocket לשינוי הפנים
 const ws = new WebSocket('wss://jarvis-visual.onrender.com');
 
 ws.onopen = () => {
@@ -9,16 +9,6 @@ ws.onmessage = (event) => {
   try {
     const data = JSON.parse(event.data);
     console.log("📨 קיבלתי מהשרת:", data);
-
-    if (data.type === 'news') {
-      const newsFeed = document.getElementById('news-feed');
-      const item = document.createElement('div');
-      item.textContent = '🟡 ' + data.message;
-      item.style.borderBottom = '1px solid #444';
-      item.style.padding = '4px';
-      newsFeed.prepend(item);
-      return;
-    }
   } catch (e) {
     console.warn("🔵 לא JSON – אולי פקודת דיבור רגילה:", event.data);
   }
@@ -30,8 +20,6 @@ ws.onmessage = (event) => {
     face.src = 'https://cdn.glitch.global/e2b1c048-c542-433a-a1b0-8c21b6c18e4c/closed.png?v=1745346349736';
   }
 };
-
-
 
 // Waveform אנימציה
 const waveCanvas = document.getElementById('waveform');
@@ -73,7 +61,7 @@ function drawCpuGraph() {
 }
 drawCpuGraph();
 
-// גרף ביטקוין + עדכון מחיר עם בדיקה סופית
+// גרף ביטקוין + עדכון מחיר
 const btcCanvas = document.getElementById('btcGraph');
 const btcCtx = btcCanvas.getContext('2d');
 btcCanvas.width = btcCanvas.offsetWidth;
@@ -84,19 +72,13 @@ function drawBtcGraph() {
   fetch('/btc-price')
     .then(response => response.json())
     .then(data => {
-      console.log('🔎 BTC DATA:', data);  // תראה מה מגיע
-
-      const rawPrice = Number(data.price);  // קלט מהשרת
-      if (!rawPrice) {
-        console.error('❌ מחיר לא חוקי:', data.price);
-        return;
-      }
+      const rawPrice = Number(data.price);
+      if (!rawPrice) return;
 
       const price = rawPrice.toFixed(2);
       document.getElementById('btc-price').innerText = `$${price}`;
       
       btcData.push(Number(rawPrice));
-      
       if (btcData.length > btcCanvas.width) btcData.shift();
 
       btcCtx.clearRect(0, 0, btcCanvas.width, btcCanvas.height);
@@ -111,8 +93,7 @@ function drawBtcGraph() {
       btcCtx.lineWidth = 2;
       btcCtx.stroke();
     })
-    .catch((error) => {
-      console.error('❌ שגיאה ב־BTC Fetch:', error);
+    .catch(() => {
       btcCtx.clearRect(0, 0, btcCanvas.width, btcCanvas.height);
       btcCtx.fillStyle = '#ff0000';
       btcCtx.fillText('BTC ERROR', 10, 50);
@@ -139,32 +120,18 @@ function updateClocks() {
 setInterval(updateClocks, 1000);
 updateClocks();
 
-// בדיקת מצב האור
-function updateLightsStatus() {
-  fetch('https://maker.ifttt.com/trigger/check_lights/with/key/cgNYs4fx61JOz-4SO4i_D0eFM5rWbuC0kEQawB_JqAT')
-    .then(res => res.json())
-    .then(data => {
-      const status = data.lights_on ? "ON" : "OFF";
-      document.getElementById('lights-status').innerText = `LIGHTS: ${status}`;
-    })
-    .catch(() => {
-      document.getElementById('lights-status').innerText = "LIGHTS: ERROR";
-    });
-}
-setInterval(updateLightsStatus, 5000);
-updateLightsStatus();
+// --- נתוני Garmin (דמו כרגע) ---
+function updateGarmin() {
+  // בעתיד כאן נעשה fetch לשרת שלך שמביא נתוני Garmin אמיתיים
+  const hr = Math.floor(60 + Math.random() * 40); 
+  const bpSystolic = 110 + Math.floor(Math.random() * 20);
+  const bpDiastolic = 70 + Math.floor(Math.random() * 15);
+  const readiness = Math.floor(50 + Math.random() * 50);
 
-// בדיקת מצב ה־Night Mode
-function updateNightModeStatus() {
-  fetch('/night-mode-status')
-    .then(res => res.json())
-    .then(data => {
-      const nightStatus = document.getElementById('night-mode-status');
-      nightStatus.innerText = `NIGHT MODE: ${data.night_mode ? 'ON' : 'OFF'}`;
-    })
-    .catch(() => {
-      document.getElementById('night-mode-status').innerText = "NIGHT MODE: ERROR";
-    });
+  document.getElementById("garmin-hr").innerText = `❤️ דופק: ${hr} BPM`;
+  document.getElementById("garmin-bp").innerText = `🩸 לחץ דם: ${bpSystolic}/${bpDiastolic}`;
+  document.getElementById("garmin-readiness").innerText = `⚡ מוכנות לאימון: ${readiness}%`;
 }
-setInterval(updateNightModeStatus, 5000);
-updateNightModeStatus();
+
+setInterval(updateGarmin, 5000);
+updateGarmin();

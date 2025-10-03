@@ -128,11 +128,17 @@ function updateGarmin() {
       document.getElementById("garmin-hr").innerText = `❤️ דופק: ${data.heartRate} BPM`;
       document.getElementById("garmin-bp").innerText = `🩸 לחץ דם: ${data.bloodPressure}`;
       document.getElementById("garmin-readiness").innerText = `⚡ מוכנות לאימון: ${data.trainingReadiness}`;
+      document.getElementById("garmin-steps").innerText = `👣 צעדים: ${data.steps}`;
+      document.getElementById("garmin-calories").innerText = `🔥 קלוריות: ${data.calories}`;
+      document.getElementById("garmin-sleep").innerText = `💤 שינה: ${data.sleep} דקות`;
     })
     .catch(() => {
       document.getElementById("garmin-hr").innerText = "❤️ דופק: ERROR";
       document.getElementById("garmin-bp").innerText = "🩸 לחץ דם: ERROR";
       document.getElementById("garmin-readiness").innerText = "⚡ מוכנות לאימון: ERROR";
+      document.getElementById("garmin-steps").innerText = "👣 צעדים: ERROR";
+      document.getElementById("garmin-calories").innerText = "🔥 קלוריות: ERROR";
+      document.getElementById("garmin-sleep").innerText = "💤 שינה: ERROR";
     });
 }
 

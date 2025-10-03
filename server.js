@@ -1,16 +1,16 @@
-const express = require("express");
-const fetch = require("node-fetch");
-const { google } = require("googleapis");
-const bodyParser = require("body-parser");
+import express from "express";
+import fetch from "node-fetch";
+import { google } from "googleapis";
+import bodyParser from "body-parser";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 // ===== OAuth הגדרות =====
 const oauth2Client = new google.auth.OAuth2(
-  "1060382255075-a51dbvl8uncects4gdq6q0j349p448f1.apps.googleusercontent.com", // Client ID שלך
-  "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", // Client Secret שלך
-  "https://jarvis-visual.onrender.com/oauth2callback" // הכתובת הרשומה ב-Google Console
+  "1060382255075-a51dbvl8uncects4gdq6q0j349p448f1.apps.googleusercontent.com", // Client ID
+  "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", // Client Secret
+  "https://jarvis-visual.onrender.com/oauth2callback" // Redirect URI מ-Google Console
 );
 
 let tokens = null;
@@ -22,6 +22,7 @@ app.use(express.static("public"));
 app.get("/auth", (req, res) => {
   const url = oauth2Client.generateAuthUrl({
     access_type: "offline",
+    prompt: "consent",
     scope: [
       "https://www.googleapis.com/auth/fitness.heart_rate.read",
       "https://www.googleapis.com/auth/fitness.activity.read",
@@ -33,12 +34,17 @@ app.get("/auth", (req, res) => {
 
 // ===== שלב 2: קבלת ה-code בחזרה =====
 app.get("/oauth2callback", async (req, res) => {
-  const { code } = req.query;
-  const { tokens: newTokens } = await oauth2Client.getToken(code);
-  oauth2Client.setCredentials(newTokens);
-  tokens = newTokens;
-  console.log("✅ התחברות הצליחה, קיבלתי טוקן");
-  res.send("✅ התחברת בהצלחה! עכשיו האתר יכול להביא נתוני בריאות מה-Google Fit שלך.");
+  try {
+    const { code } = req.query;
+    const { tokens: newTokens } = await oauth2Client.getToken(code);
+    oauth2Client.setCredentials(newTokens);
+    tokens = newTokens;
+    console.log("✅ התחברות הצליחה, קיבלתי טוקן");
+    res.send("✅ התחברת בהצלחה! עכשיו האתר יכול להביא נתוני בריאות מה-Google Fit שלך.");
+  } catch (err) {
+    console.error("❌ שגיאה בקבלת טוקן:", err);
+    res.status(500).send("שגיאה בהתחברות ל-Google Fit");
+  }
 });
 
 // ===== שלב 3: Endpoint שמחזיר דופק אמיתי =====
@@ -63,10 +69,10 @@ app.get("/garmin", async (req, res) => {
     res.json({
       heartRate: hr,
       bloodPressure: "--/--", // Google Fit לא מחזיר לחץ דם
-      trainingReadiness: "--" // אין ב-Google Fit, רק ב-Garmin
+      trainingReadiness: "--" // אין ב-Google Fit
     });
   } catch (err) {
-    console.error(err);
+    console.error("❌ שגיאה בשליפת נתונים:", err);
     res.status(500).json({ error: "Failed to fetch Google Fit data" });
   }
 });
